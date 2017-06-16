@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import sys
+import socket
+
+# Servidor
+Server = 65535
+
+# Tipos
+OK = '0001'
+OI = '0003'
+MSG = '0005'
+
+# Para montar o cabecalho da mensagem
+def montarCabecalho(tipo, IDO, IDD, numSeq):
+	cabecalho = tipo + IDO + IDD + numSeq
+	return cabecalho
+
+for aux in sys.argv[1:2]:
+    ip, port = aux.split(":")
+HOST = ip		# Endereco IP para a conexao
+PORT = int(port)	# Porta para a conexao	
+tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+dest = (HOST, PORT)
+tcp.connect(dest)
+sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
+primeiraVez = 1
+while True:
+	if primeiraVez == 1:
+	    primeiroCabecalho = montarCabecalho(OI, '0000', '0000', str(sequencia))
+  	    tcp.send (primeiroCabecalho)
+	    primeiraVez = 0
+ 	    # Recebe confirmacao (OK)
+	    msg = tcp.recv(1024)
+	    print "Para enviar mensagem para este exibidor, utilizar o ID", msg[8:12]
+	# Apos receber confirmacao, aguarda por uma mensagem a ser recebida
+	else:
+    	    mensagem = tcp.recv(1024)
+            print mensagem[16:]
+            #novaSequencia = int(sequencia)
+            #novaSequencia = novaSequencia + 1
+            #sequencia = str(novaSequencia)
+            #checarMensagem = montarCabecalho(MSG,'9999',msg[8:12],sequencia)
+	    #print mensagem [:16], checarMensagem
+	    #if mensagem[:16] == checarMensagem:
+		#print "ERRO"
+	    #else:
+	        #print mensagem[16:]
+	 	#confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',sequencia)
+		#tcp.send(confirmarRecebimento)
+tcp.close()

@@ -1,0 +1,172 @@
+#!/usr/bin/python
+
+import select
+import socket
+import sys
+import Queue
+
+# Limites para identificadores
+numMinEmissor = 1
+numMaxEmissor = 4095
+numMinExibidor = 4096
+numMaxExibidor = 8191
+
+# Tipos
+OK = '0001'
+OI = '0003'
+MSG = '0005'
+
+# Contadores
+contadorDeEmissor = 0
+contadorDeExibidor = 0
+
+# Vetores 
+arrayEmissor = []
+arrayExibidor = []
+
+# Para montar o cabecalho da mensagem
+def montarCabecalho(tipo, IDO, IDD, numSeq):
+	cabecalho = tipo + IDO + IDD + numSeq
+	return cabecalho
+
+# Encontrar ID na array
+def encontrarID(array,num):
+	if num in array:
+    		return array.index(num)
+
+# Create a TCP/IP socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setblocking(0)
+
+# Recebendo porta
+PORT = int(sys.argv[1])
+
+# Bind the socket to the port
+server_address = ('localhost', PORT)
+print >>sys.stderr, 'starting up on %s port %s' % server_address
+server.bind(server_address)
+
+# Listen for incoming connections
+server.listen(5)
+
+# Sockets from which we expect to read
+inputs = [ server ]
+
+# Sockets to which we expect to write
+outputs = [ ]
+
+# Outgoing message queues (socket:Queue)
+message_queues = {}
+
+while inputs:
+
+    # Wait for at least one of the sockets to be ready for processing
+    print >>sys.stderr, '\nwaiting for the next event'
+    readable, writable, exceptional = select.select(inputs, outputs, inputs)
+
+    # Handle inputs
+    for s in readable:
+
+        if s is server:
+            # A "readable" server socket is ready to accept a connection
+            connection, client_address = s.accept()
+            print >>sys.stderr, 'new connection from', client_address
+            connection.setblocking(0)
+            inputs.append(connection)
+
+            # Give the connection a queue for data we want to send
+            message_queues[connection] = Queue.Queue()
+        else:
+            data = s.recv(1024)
+            if data:
+                # A readable client socket has data
+                print >>sys.stderr, 'received "%s" from %s' % (data, s.getpeername())
+		# Se exibidor
+		if data[4:8] == '0000':
+		    # Se o exibidor ja estiver registrado anteriormente
+		    if s in arrayExibidor:
+			print "Exibidor ja registrado"
+		    # Senao, registra o exibidor nos dados do servidor
+		    else:
+		        contadorDeExibidor += 1 
+		        arrayExibidor.append(s)
+		        identificadorExibidor = (numMinExibidor - 1) + contadorDeExibidor
+		        cabecalhoConfirma = montarCabecalho(OK,'0000',str(identificadorExibidor),data[12:])
+		        message_queues[s].put(cabecalhoConfirma)
+		# Se emissor e envio para todos os exibidores
+		if data[4:8] == '9999':
+		    # Se o emissor ja estiver registrado anteriormente
+		    if s in arrayEmissor:
+			print "qualquer coisa"
+		    # Senao, registra o emissor nos dados do servidor
+		    else:
+		        contadorDeEmissor += 1
+		        arrayEmissor.append(s)
+		        identificadorEmissor = (numMinEmissor - 1) + contadorDeEmissor
+		        cabecalhoConfirma = montarCabecalho(OK,'0000',str('{:04d}'.format(identificadorEmissor)),data[12:])
+		        message_queues[s].put(cabecalhoConfirma)
+		# Se emissor e envio para um emissor especifico
+	        if (data[4:8] != '0000' and data[4:8] != '9999'):
+		    # Se o emissor ja estiver registrado anteriormente
+		    if s in arrayEmissor:
+			# ID para onde a mensagem deve ser enviada
+			destino = int(data[8:12])
+			destino = destino - 4096
+			mensagem = data[16:]
+			print mensagem
+			# Montar cabecalho
+			mensagemFinal = montarCabecalho(MSG, '9999',data[8:12],data[12:16]) + mensagem
+			arrayExibidor[destino].send(mensagemFinal)
+			# Envia para o emissor o OK
+			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
+			s.send(confirmacao)
+		    # Senao, registra o emissor nos dados do servidor
+		    else:
+		        contadorDeEmissor += 1
+		        arrayEmissor.append(s)
+		        identificadorEmissor = (numMinEmissor - 1) + contadorDeEmissor
+		        cabecalhoConfirma = montarCabecalho(OK,'0000',str('{:04d}'.format(identificadorEmissor)),data[12:])
+		        message_queues[s].put(cabecalhoConfirma)
+                # Add output channel for response
+                if s not in outputs:
+                    outputs.append(s)
+            else:
+                # Interpret empty result as closed connection
+                #print >>sys.stderr, 'closing', client_address, 'after reading no data'
+                print >>sys.stderr, 'closing', s.getpeername(), 'after reading no data'
+                # Stop listening for input on the connection
+                if s in outputs:
+                    outputs.remove(s)
+                inputs.remove(s)
+                s.close()
+
+                # Remove message queue
+                del message_queues[s]
+    # Handle outputs
+    for s in writable:
+        try:
+            next_msg = message_queues[s].get_nowait()
+        except Queue.Empty:
+            # No messages waiting so stop checking for writability.
+            print >>sys.stderr, 'output queue for', s.getpeername(), 'is empty'
+            outputs.remove(s)
+        else:
+	    if s in arrayExibidor:
+		posicao = arrayExibidor.index(s) + 4096
+                print >>sys.stderr, 'sending "%s" to %s (ID: %s)' % (next_msg, s.getpeername(),posicao)
+                s.send(next_msg)
+	    else:
+		posicao = arrayEmissor.index(s) + 1
+		print >>sys.stderr, 'sending "%s" to %s (ID: %s)' % (next_msg, s.getpeername(),posicao)
+                s.send(next_msg)
+    # Handle "exceptional conditions"
+    for s in exceptional:
+        print >>sys.stderr, 'handling exceptional condition for', s.getpeername()
+        # Stop listening for input on the connection
+        inputs.remove(s)
+        if s in outputs:
+            outputs.remove(s)
+        s.close()
+
+        # Remove message queue
+        del message_queues[s]

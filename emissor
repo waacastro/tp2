@@ -1,0 +1,70 @@
+#!/usr/bin/python
+
+import sys
+import socket
+
+# Tipos
+OK = '0001'
+OI = '0003'
+MSG = '0005'
+
+# Para montar o cabecalho da mensagem
+def montarCabecalho(tipo, IDO, IDD, numSeq):
+	cabecalho = tipo + IDO + IDD + numSeq
+	return cabecalho
+
+for aux in sys.argv[1:2]:
+    ip, port = aux.split(":")
+HOST = ip		# Endereco IP para a conexao
+PORT = int(port)	# Porta para a conexao		
+tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+dest = (HOST, PORT)
+tcp.connect(dest)
+
+if len(sys.argv) > 2:
+    idExibidor = int(sys.argv[2])
+else: 
+    idExibidor = 'todos'
+print "Este emissor enviara mensagens para", idExibidor
+#msg = raw_input()
+sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
+while True:
+    # Se ja houver um ID para envio
+    if isinstance(idExibidor,int):
+	primeiroCabecalho = montarCabecalho(OI, '{:04d}'.format(idExibidor), '0000', str(sequencia))
+        tcp.send (primeiroCabecalho)
+        # Recebe confirmacao (OK)
+        msg = tcp.recv(1024)
+        print "Este emissor tem ID:", msg[8:12]
+        IDOrigem = msg[8:12]
+        texto = raw_input()
+        while texto <> '\x18':
+	    novoSequencia = int(sequencia)
+	    novoSequencia += 1
+	    sequencia = str('{:04d}'.format(novoSequencia))
+	    cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '{:04d}'.format(idExibidor), sequencia) 
+	    mensagem = cabecalhoParaMensagem + texto
+            tcp.send(mensagem)
+	    confirmacao = tcp.recv(1024)
+        tcp.close()
+    # Senao envia para todos os exibidores disponiveis
+    else:    
+        primeiroCabecalho = montarCabecalho(OI, '9999', '0000', str(sequencia))
+        tcp.send (primeiroCabecalho)
+        # Recebe confirmacao (OK)
+        msg = tcp.recv(1024)
+        print "Este emissor tem ID:", msg[8:12]
+        IDOrigem = msg[8:12]
+        texto = raw_input()
+        while texto <> '\x18':
+	    novoSequencia = int(sequencia)
+	    novoSequencia += 1
+	    sequencia = str('{:04d}'.format(novoSequencia))
+	    cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
+	    mensagem = cabecalhoParaMensagem + texto
+            tcp.send(mensagem)
+	    confirmacao = tcp.recv(1024)
+	    checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+	    if confirmacao != checarOK:
+		print "ERRO"
+        tcp.close()
