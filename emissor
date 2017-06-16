@@ -28,43 +28,58 @@ else:
 print "Este emissor enviara mensagens para", idExibidor
 #msg = raw_input()
 sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
+primeiraVez = 1
+IDOrigem = 0
 while True:
     # Se ja houver um ID para envio
     if isinstance(idExibidor,int):
-	primeiroCabecalho = montarCabecalho(OI, '{:04d}'.format(idExibidor), '0000', str(sequencia))
-        tcp.send (primeiroCabecalho)
-        # Recebe confirmacao (OK)
-        msg = tcp.recv(1024)
-        print "Este emissor tem ID:", msg[8:12]
-        IDOrigem = msg[8:12]
-        texto = raw_input()
-        while texto <> '\x18':
-	    novoSequencia = int(sequencia)
-	    novoSequencia += 1
-	    sequencia = str('{:04d}'.format(novoSequencia))
-	    cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '{:04d}'.format(idExibidor), sequencia) 
-	    mensagem = cabecalhoParaMensagem + texto
-            tcp.send(mensagem)
-	    confirmacao = tcp.recv(1024)
-        tcp.close()
+	if primeiraVez == 1:
+	    primeiroCabecalho = montarCabecalho(OI, '{:04d}'.format(idExibidor), '0000', str(sequencia))
+            tcp.send (primeiroCabecalho)
+	    primeiraVez = 0
+            # Recebe confirmacao (OK)
+            msg = tcp.recv(1024)
+            print "Este emissor tem ID:", msg[8:12]
+            IDOrigem = msg[8:12]
+	else:
+            texto = raw_input()
+            while texto <> '\x18':
+	        novoSequencia = int(sequencia)
+	        novoSequencia += 1
+	        sequencia = str('{:04d}'.format(novoSequencia))
+	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '{:04d}'.format(idExibidor), sequencia) 
+	        mensagem = cabecalhoParaMensagem + texto
+                tcp.send(mensagem)
+	        confirmacao = tcp.recv(1024)
+	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+	        if confirmacao != checarOK:
+		    print "ERRO"
+	        else:
+		    print "MENSAGEM ENVIADA"
+		texto = raw_input()
+            tcp.close()
     # Senao envia para todos os exibidores disponiveis
-    else:    
-        primeiroCabecalho = montarCabecalho(OI, '9999', '0000', str(sequencia))
-        tcp.send (primeiroCabecalho)
-        # Recebe confirmacao (OK)
-        msg = tcp.recv(1024)
-        print "Este emissor tem ID:", msg[8:12]
-        IDOrigem = msg[8:12]
-        texto = raw_input()
-        while texto <> '\x18':
-	    novoSequencia = int(sequencia)
-	    novoSequencia += 1
-	    sequencia = str('{:04d}'.format(novoSequencia))
-	    cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
-	    mensagem = cabecalhoParaMensagem + texto
-            tcp.send(mensagem)
-	    confirmacao = tcp.recv(1024)
-	    checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
-	    if confirmacao != checarOK:
-		print "ERRO"
-        tcp.close()
+    else:
+	if primeiraVez == 1:    
+            primeiroCabecalho = montarCabecalho(OI, '9999', '0000', str(sequencia))
+            tcp.send (primeiroCabecalho)
+	    primeiraVez = 0
+            # Recebe confirmacao (OK)
+            msg = tcp.recv(1024)
+            print "Este emissor tem ID:", msg[8:12]
+            IDOrigem = msg[8:12]
+	else:
+            texto = raw_input()
+            while texto <> '\x18':
+	        novoSequencia = int(sequencia)
+	        novoSequencia += 1
+	        sequencia = str('{:04d}'.format(novoSequencia))
+	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
+	        mensagem = cabecalhoParaMensagem + texto
+                tcp.send(mensagem)
+	        confirmacao = tcp.recv(1024)
+	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+	        if confirmacao != checarOK:
+		    print "ERRO"
+		texto = raw_input()
+            tcp.close()
