@@ -34,18 +34,21 @@ while True:
 	    msg = tcp.recv(1024)
 	    print "Para enviar mensagem para este exibidor, utilizar o ID", msg[8:12]
 	# Apos receber confirmacao, aguarda por uma mensagem a ser recebida
+    	mensagem = tcp.recv(1024)
+	if not mensagem: break
+	# Se for mensagem OK
+	if mensagem[0:4] == OK:
+	    print "TUDO CERTO"
 	else:
-    	    mensagem = tcp.recv(1024)
-            print mensagem[16:]
-            #novaSequencia = int(sequencia)
-            #novaSequencia = novaSequencia + 1
-            #sequencia = str(novaSequencia)
-            #checarMensagem = montarCabecalho(MSG,'9999',msg[8:12],sequencia)
-	    #print mensagem [:16], checarMensagem
-	    #if mensagem[:16] == checarMensagem:
-		#print "ERRO"
-	    #else:
-	        #print mensagem[16:]
-	 	#confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',sequencia)
-		#tcp.send(confirmarRecebimento)
+            novaSequencia = int(sequencia)
+            novaSequencia = novaSequencia + 1
+            sequencia = str('{:04d}'.format(novaSequencia))
+            checarMensagem = montarCabecalho(MSG,'9999',msg[8:12],sequencia)
+	    print mensagem [:16], checarMensagem
+	    if mensagem[:16] == checarMensagem:
+	        print mensagem[16:]
+	        confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',sequencia)
+	        tcp.send(confirmarRecebimento)
+	    else:
+	        print "ERRO"
 tcp.close()
