@@ -45,11 +45,11 @@ while True:
             novaSequencia = int(sequencia)
             novaSequencia = novaSequencia + 1
             sequencia = str('{:04d}'.format(novaSequencia))
-            checarMensagem = montarCabecalho(MSG,'9999',msg[8:12],sequencia)
+            checarMensagem = montarCabecalho(MSG,'9999',msg[8:12],mensagem[12:16])
 	    print mensagem [:16], checarMensagem
 	    if mensagem[:16] == checarMensagem:
 	        print mensagem[16:]
-	        confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',sequencia)
+	        confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',mensagem[12:16])
 	        tcp.send(confirmarRecebimento)
 	    else:
 	        print "ERRO"
