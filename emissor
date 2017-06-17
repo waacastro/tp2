@@ -34,7 +34,7 @@ while True:
     # Se ja houver um ID para envio
     if isinstance(idExibidor,int):
 	if primeiraVez == 1:
-	    primeiroCabecalho = montarCabecalho(OI, '{:04d}'.format(idExibidor), '0000', str(sequencia))
+	    primeiroCabecalho = montarCabecalho(OI, '9999', '9999', str(sequencia))
             tcp.send (primeiroCabecalho)
 	    primeiraVez = 0
             # Recebe confirmacao (OK)
@@ -61,7 +61,7 @@ while True:
     # Senao envia para todos os exibidores disponiveis
     else:
 	if primeiraVez == 1:    
-            primeiroCabecalho = montarCabecalho(OI, '9999', '0000', str(sequencia))
+            primeiroCabecalho = montarCabecalho(OI, '9999', '9999', str(sequencia))
             tcp.send (primeiroCabecalho)
 	    primeiraVez = 0
             # Recebe confirmacao (OK)
@@ -74,12 +74,15 @@ while True:
 	        novoSequencia = int(sequencia)
 	        novoSequencia += 1
 	        sequencia = str('{:04d}'.format(novoSequencia))
-	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
+	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '9999', sequencia) 
 	        mensagem = cabecalhoParaMensagem + texto
                 tcp.send(mensagem)
 	        confirmacao = tcp.recv(1024)
 	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+		print confirmacao, checarOK
 	        if confirmacao != checarOK:
 		    print "ERRO"
+	        else:
+		    print "MENSAGEM ENVIADA"
 		texto = raw_input()
             tcp.close()

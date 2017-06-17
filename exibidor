@@ -23,11 +23,11 @@ PORT = int(port)	# Porta para a conexao
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 dest = (HOST, PORT)
 tcp.connect(dest)
-sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
 primeiraVez = 1
+sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
 while True:
 	if primeiraVez == 1:
-	    primeiroCabecalho = montarCabecalho(OI, '0000', '0000', str(sequencia))
+	    primeiroCabecalho = montarCabecalho(OI, '0000', '9999', str(sequencia))
   	    tcp.send (primeiroCabecalho)
 	    primeiraVez = 0
  	    # Recebe confirmacao (OK)
