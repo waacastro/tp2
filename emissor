@@ -87,6 +87,15 @@ while True:
 	    cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999',str(sequencia))
             tcp.send (cabecalhoClist)
 	    print "CLIST: ", listaClientes[20:]
+	    print "Tamanho:",len(listaClientes[20:])
+	    # Lista que recebera os IDs dos clientes e ira contar apenas exibidores cadastrados no servidor
+	    listaFinal = []
+	    i = 0
+	    while i < len(listaClientes[20:]):
+		if int(listaClientes[20+i:24+i]) > 4095:
+ 		    listaFinal.append(listaClientes[20+i:24+i])
+		i = i + 6
+	    print listaFinal, len(listaFinal)
             texto = raw_input()
             while texto <> '\x18':
 	        novoSequencia = int(sequencia)

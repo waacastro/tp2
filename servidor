@@ -105,7 +105,7 @@ while inputs:
 		if data[0:4] == OK:
 		    print "MENSAGEM OK RECEBIDA"
 		# Se exibidor
-		if data[4:8] == '0000':
+		if (data[0:4] == OI and data[4:8] == '0000'):
 		    # Se o exibidor ja estiver registrado anteriormente
 		    if s in arrayExibidor:
 			print "Exibidor ja registrado"
