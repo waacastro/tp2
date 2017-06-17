@@ -10,6 +10,8 @@ Server = 65535
 OK = '0001'
 OI = '0003'
 MSG = '0005'
+CREQ = '0006'
+CLIST = '0007'
 
 # Para montar o cabecalho da mensagem
 def montarCabecalho(tipo, IDO, IDD, numSeq):

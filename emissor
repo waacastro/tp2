@@ -7,6 +7,8 @@ import socket
 OK = '0001'
 OI = '0003'
 MSG = '0005'
+CREQ = '0006'
+CLIST = '0007'
 
 # Para montar o cabecalho da mensagem
 def montarCabecalho(tipo, IDO, IDD, numSeq):
@@ -69,6 +71,22 @@ while True:
             print "Este emissor tem ID:", msg[8:12]
             IDOrigem = msg[8:12]
 	else:
+	    # Envia CREQ para receber a lista de clientes conectados
+	    cabecalhoCreq = montarCabecalho(CREQ, IDOrigem, '9999',str(sequencia))
+            tcp.send (cabecalhoCreq)
+            # Recebe confirmacao (OK) e lista
+            confirmacaoCreq = tcp.recv(1024)
+	    checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+	    #print confirmacaoCreq, checarOKCreq
+	    if confirmacaoCreq != checarOKCreq:
+		print "ERRO"
+	    else:
+		print "CREQ RECEBIDO"
+	    listaClientes = tcp.recv(1024)
+	    # Envia OK pois recebeu o CLIST
+	    cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999',str(sequencia))
+            tcp.send (cabecalhoClist)
+	    print "CLIST: ", listaClientes[20:]
             texto = raw_input()
             while texto <> '\x18':
 	        novoSequencia = int(sequencia)
