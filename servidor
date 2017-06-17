@@ -128,10 +128,9 @@ while inputs:
 			    destino = destino + numMinExibidor
 			    mensagemFinal = montarCabecalho(MSG, '9999',str('{:04d}'.format(destino)),data[12:16]) + mensagem
 			    e.send(mensagemFinal)
-			    # Esvazia a string de confirmacao e envia para o emissor o OK
-			    confirmacao = ''
-			    confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
-			    s.send(confirmacao)
+			# Envia para o emissor o OK
+			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
+			s.send(confirmacao)
 		    # Senao, registra o emissor nos dados do servidor
 		    if s not in arrayEmissor:
 		        contadorDeEmissor += 1

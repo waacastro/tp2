@@ -105,6 +105,7 @@ while True:
 	        mensagem = cabecalhoParaMensagem + texto
                 tcp.send(mensagem)
 	        confirmacao = tcp.recv(1024)
+	  	for j in range(0, len(confirmacao), 16): [confirmacao[j:j+16]]
 	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
 		print confirmacao, checarOK
 	        if confirmacao != checarOK:
