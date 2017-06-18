@@ -95,8 +95,10 @@ while inputs:
 		    	confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
 		    	s.send(confirmacao)
 			# Avisa o exibidor que o emissor vai fechar a conexao
-			destino = int(data[8:12])
-			destino = destino - numMinExibidor
+			if int(data[8:12]) != 0:
+			    destino = int(data[8:12])
+			    destino = destino - numMinExibidor
+			else: destino = 0
 			enviarFLW = montarCabecalho(FLW, data[4:8], data[8:12], data[12:16])
 			arrayExibidor[destino].send(enviarFLW)
 			# Remove o emissor da lista de emissores	
