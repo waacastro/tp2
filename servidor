@@ -85,22 +85,27 @@ while inputs:
                 print >>sys.stderr, 'received "%s" from %s' % (data, s.getpeername())
 		# Se mensagem CREQ
 		if data[0:4] == CREQ:
-		    # Envia para o emissor o OK
-		    confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
-		    s.send(confirmacao)
-		    # Montar o CLIST
-		    numClientes = str('{:04d}'.format(contadorDeEmissor + contadorDeExibidor))
-		    listaClientes = []
-		    i = 0
-		    while i < contadorDeEmissor:
-		        listaClientes.append(str('{:04d}'.format(i+numMinEmissor)))
-			i = i + 1	
-		    i = 0
-		    while i < contadorDeExibidor:
-		        listaClientes.append(str('{:04d}'.format(i+numMinExibidor)))
-			i = i + 1	
-	    	    mensagemFinal = montarCabecalho(CLIST, '9999',data[4:8],data[12:16]) + numClientes + ', '.join(listaClientes)
-		    s.send(mensagemFinal)
+		    # Confere se o ID do emissor eh valido
+		    IDEmissor = int(data[4:8])
+		    if s != arrayEmissor[IDEmissor - numMinEmissor]:
+			print "ERRO"
+		    else:
+		    	# Envia para o emissor o OK
+		    	confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
+		    	s.send(confirmacao)
+		    	# Montar o CLIST
+		    	numClientes = str('{:04d}'.format(contadorDeEmissor + contadorDeExibidor))
+		    	listaClientes = []
+		    	i = 0
+		    	while i < contadorDeEmissor:
+		            listaClientes.append(str('{:04d}'.format(i+numMinEmissor)))
+			    i = i + 1	
+		    	i = 0
+		    	while i < contadorDeExibidor:
+		            listaClientes.append(str('{:04d}'.format(i+numMinExibidor)))
+			    i = i + 1	
+	    	    	mensagemFinal = montarCabecalho(CLIST, '9999',data[4:8],data[12:16]) + numClientes + ', '.join(listaClientes)
+		        s.send(mensagemFinal)
 		# Se mensagem OK
 		if data[0:4] == OK:
 		    print "MENSAGEM OK RECEBIDA"
@@ -121,16 +126,21 @@ while inputs:
 	        if (data[4:8] != '0000' and data[8:12] == '9999' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST):
 		    # Se o emissor ja estiver registrado anteriormente
 		    if s in arrayEmissor:
-			mensagem = data[16:]
-			# Montar cabecalho para todos os exibidores
-			for e in arrayExibidor:
-			    destino =  arrayExibidor.index(e)
-			    destino = destino + numMinExibidor
-			    mensagemFinal = montarCabecalho(MSG, data[4:8], str('{:04d}'.format(destino)),data[12:16]) + mensagem
-			    e.send(mensagemFinal)
-			# Envia para o emissor o OK
-			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
-			s.send(confirmacao)
+		        # Confere se o ID do emissor eh valido
+		        IDEmissor = int(data[4:8])
+		        if s != arrayEmissor[IDEmissor - numMinEmissor]:
+			    print "ERRO"
+			else:
+			    mensagem = data[16:]
+			    # Montar cabecalho para todos os exibidores
+			    for e in arrayExibidor:
+			        destino =  arrayExibidor.index(e)
+			        destino = destino + numMinExibidor
+			        mensagemFinal = montarCabecalho(MSG, data[4:8], str('{:04d}'.format(destino)),data[12:16]) + mensagem
+			        e.send(mensagemFinal)
+			    # Envia para o emissor o OK
+			    confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
+			    s.send(confirmacao)
 		    # Senao, registra o emissor nos dados do servidor
 		    if s not in arrayEmissor:
 		        contadorDeEmissor += 1
@@ -143,17 +153,22 @@ while inputs:
 	        if (data[4:8] != '0000' and data[8:12] != '9999' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST):
 		    # Se o emissor ja estiver registrado anteriormente
 		    if s in arrayEmissor:
-			# ID para onde a mensagem deve ser enviada
-			destino = int(data[8:12])
-			destino = destino - numMinExibidor
-			mensagem = data[16:]
-			print mensagem, destino
-			# Montar cabecalho
-			mensagemFinal = montarCabecalho(MSG, data[4:8],data[8:12],data[12:16]) + mensagem
-			arrayExibidor[destino].send(mensagemFinal)
-			# Envia para o emissor o OK
-			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
-			s.send(confirmacao)
+		        # Confere se o ID do emissor eh valido
+		        IDEmissor = int(data[4:8])
+		        if s != arrayEmissor[IDEmissor - numMinEmissor]:
+			    print "ERRO"
+			else:
+			    # ID para onde a mensagem deve ser enviada
+			    destino = int(data[8:12])
+			    destino = destino - numMinExibidor
+			    mensagem = data[16:]
+			    print mensagem, destino
+			    # Montar cabecalho
+			    mensagemFinal = montarCabecalho(MSG, data[4:8],data[8:12],data[12:16]) + mensagem
+			    arrayExibidor[destino].send(mensagemFinal)
+			    # Envia para o emissor o OK
+			    confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
+			    s.send(confirmacao)
 		    # Senao, registra o emissor nos dados do servidor
 		    if s not in arrayEmissor:
 		        contadorDeEmissor += 1
