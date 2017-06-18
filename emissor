@@ -101,7 +101,7 @@ while True:
 	        novoSequencia = int(sequencia)
 	        novoSequencia += 1
 	        sequencia = str('{:04d}'.format(novoSequencia))
-	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '9999', sequencia) 
+	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
 	        mensagem = cabecalhoParaMensagem + texto
                 tcp.send(mensagem)
 	        confirmacao = tcp.recv(1024)
