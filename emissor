@@ -6,6 +6,7 @@ import socket
 # Tipos
 OK = '0001'
 OI = '0003'
+FLW = '0004'
 MSG = '0005'
 CREQ = '0006'
 CLIST = '0007'
@@ -59,7 +60,19 @@ while True:
 	        else:
 		    print "MENSAGEM ENVIADA"
 		texto = raw_input()
-            tcp.close()
+	    # Fechando conexao
+	    criaFLW = montarCabecalho(FLW, IDOrigem, '{:04d}'.format(idExibidor), sequencia)
+	    tcp.send(criaFLW)
+	    # Aguarda o OK
+	    confirmaFLW = montarCabecalho(OK,'9999',IDOrigem, sequencia)
+	    recebeuOK = tcp.recv(1024)
+	    if confirmaFLW == recebeuOK:
+		print "FECHANDO CONEXAO..."
+		#tcp.settimeout(10)
+            	tcp.close()
+	    else:
+		print "ERRO"
+
     # Senao envia para todos os exibidores disponiveis
     else:
 	if primeiraVez == 1:    
@@ -113,4 +126,16 @@ while True:
 	        else:
 		    print "MENSAGEM ENVIADA"
 		texto = raw_input()
-            tcp.close()
+	    # Fechando conexao
+	    criaFLW = montarCabecalho(FLW, IDOrigem, '0000', sequencia)
+	    tcp.send(criaFLW)
+	    # Aguarda o OK
+	    confirmaFLW = montarCabecalho(OK,'9999',IDOrigem, sequencia)
+	    recebeuOK = tcp.recv(1024)
+	    if confirmaFLW == recebeuOK:
+		print "FECHANDO CONEXAO..."
+		#tcp.settimeout(10)
+            	tcp.close()
+	    else:
+		print "ERRO"
+
