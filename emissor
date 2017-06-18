@@ -47,7 +47,7 @@ while True:
             msg = tcp.recv(1024)
             IDOrigem = msg[8:12]
             print "Este emissor tem ID:", IDOrigem
-            tcp.send(montarCabecalho(CREQ, IDOrigem, sys.argv[2], str(sequencia)))
+            tcp.send(montarCabecalho(CREQ, IDOrigem, '9999', str(sequencia)))
             # Recebe confirmacao (OK) e lista
             confirmacaoCreq = tcp.recv(1024)
             checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
@@ -58,7 +58,7 @@ while True:
                 print "CREQ RECEBIDO"
             listaClientes = tcp.recv(1024)
             # Envia OK pois recebeu o CLIST
-            cabecalhoClist = montarCabecalho(CLIST, IDOrigem, sys.argv[2], str(sequencia))
+            cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999', str(sequencia))
             tcp.send(cabecalhoClist)
             print "CLIST: ", listaClientes[20:]
             print "Tamanho:", len(listaClientes[20:])
