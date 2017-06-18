@@ -11,134 +11,154 @@ MSG = '0005'
 CREQ = '0006'
 CLIST = '0007'
 
+
 # Para montar o cabecalho da mensagem
 def montarCabecalho(tipo, IDO, IDD, numSeq):
-	cabecalho = tipo + IDO + IDD + numSeq
-	return cabecalho
+    cabecalho = tipo + IDO + IDD + numSeq
+    return cabecalho
+
 
 for aux in sys.argv[1:2]:
     ip, port = aux.split(":")
-HOST = ip		# Endereco IP para a conexao
-PORT = int(port)	# Porta para a conexao		
+HOST = ip  # Endereco IP para a conexao
+PORT = int(port)  # Porta para a conexao
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 dest = (HOST, PORT)
 tcp.connect(dest)
 
 if len(sys.argv) > 2:
     idExibidor = int(sys.argv[2])
-else: 
+else:
     idExibidor = 'todos'
 print "Este emissor enviara mensagens para", idExibidor
 print "Para fechar a conexao use CTRL+X"
-#msg = raw_input()
-sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
+# msg = raw_input()
+sequencia = '0000'  # Se inicia como string, para incrementar basta transforma-la em int
 primeiraVez = 1
 IDOrigem = 0
 while True:
     # Se ja houver um ID para envio
-    if isinstance(idExibidor,int):
-	if primeiraVez == 1:
-	    primeiroCabecalho = montarCabecalho(OI, '9999', '9999', str(sequencia))
-            tcp.send (primeiroCabecalho)
-	    primeiraVez = 0
+    if isinstance(idExibidor, int):
+        if primeiraVez == 1:
+            primeiroCabecalho = montarCabecalho(OI, '9999', '9999', str(sequencia))
+            tcp.send(primeiroCabecalho)
+            primeiraVez = 0
             # Recebe confirmacao (OK)
             msg = tcp.recv(1024)
-            print "Este emissor tem ID:", msg[8:12]
             IDOrigem = msg[8:12]
-	else:
+            print "Este emissor tem ID:", IDOrigem
+            tcp.send(montarCabecalho(CREQ, IDOrigem, sys.argv[2], str(sequencia)))
+            # Recebe confirmacao (OK) e lista
+            confirmacaoCreq = tcp.recv(1024)
+            checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
+            print confirmacaoCreq, checarOKCreq
+            if confirmacaoCreq != checarOKCreq:
+                print "ERRO"
+            else:
+                print "CREQ RECEBIDO"
+            listaClientes = tcp.recv(1024)
+            # Envia OK pois recebeu o CLIST
+            cabecalhoClist = montarCabecalho(CLIST, IDOrigem, sys.argv[2], str(sequencia))
+            tcp.send(cabecalhoClist)
+            print "CLIST: ", listaClientes[20:]
+            print "Tamanho:", len(listaClientes[20:])
+            if sys.argv[2] in listaClientes:
+                print 'Conectado ao exibidor', sys.argv[2]
+            else:
+                print 'Nao existe nenhum exibidor com o ID', sys.argv[2]
+        else:
             texto = raw_input()
             while texto <> '\x18':
-	        novoSequencia = int(sequencia)
-	        novoSequencia += 1
-	        sequencia = str('{:04d}'.format(novoSequencia))
-	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '{:04d}'.format(idExibidor), sequencia) 
-	        mensagem = cabecalhoParaMensagem + texto
+                novoSequencia = int(sequencia)
+                novoSequencia += 1
+                sequencia = str('{:04d}'.format(novoSequencia))
+                cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '{:04d}'.format(idExibidor), sequencia)
+                mensagem = cabecalhoParaMensagem + texto
                 tcp.send(mensagem)
-	        confirmacao = tcp.recv(1024)
-	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
-	        if confirmacao != checarOK:
-		    print "ERRO"
-	        else:
-		    print "MENSAGEM ENVIADA"
-		texto = raw_input()
-	    # Fechando conexao
-	    criaFLW = montarCabecalho(FLW, IDOrigem, '{:04d}'.format(idExibidor), sequencia)
-	    tcp.send(criaFLW)
-	    # Aguarda o OK
-	    confirmaFLW = montarCabecalho(OK,'9999',IDOrigem, sequencia)
-	    recebeuOK = tcp.recv(1024)
-	    if confirmaFLW == recebeuOK:
-		print "FECHANDO CONEXAO..."
-		#tcp.settimeout(10)
-            	tcp.close()
-	    else:
-		print "ERRO"
-            	tcp.close()
+                confirmacao = tcp.recv(1024)
+                checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+                if confirmacao != checarOK:
+                    print "ERRO"
+                else:
+                    print "MENSAGEM ENVIADA"
+                texto = raw_input()
+            # Fechando conexao
+            criaFLW = montarCabecalho(FLW, IDOrigem, '{:04d}'.format(idExibidor), sequencia)
+            tcp.send(criaFLW)
+            # Aguarda o OK
+            confirmaFLW = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+            recebeuOK = tcp.recv(1024)
+            if confirmaFLW == recebeuOK:
+                print "FECHANDO CONEXAO..."
+                # tcp.settimeout(10)
+                tcp.close()
+            else:
+                print "ERRO"
+                tcp.close()
 
     # Senao envia para todos os exibidores disponiveis
     else:
-	if primeiraVez == 1:    
+        if primeiraVez == 1:
             primeiroCabecalho = montarCabecalho(OI, '9999', '9999', str(sequencia))
-            tcp.send (primeiroCabecalho)
-	    primeiraVez = 0
+            tcp.send(primeiroCabecalho)
+            primeiraVez = 0
             # Recebe confirmacao (OK)
             msg = tcp.recv(1024)
             print "Este emissor tem ID:", msg[8:12]
             IDOrigem = msg[8:12]
-	else:
-	    # Envia CREQ para receber a lista de clientes conectados
-	    cabecalhoCreq = montarCabecalho(CREQ, IDOrigem, '9999',str(sequencia))
-            tcp.send (cabecalhoCreq)
+        else:
+            # Envia CREQ para receber a lista de clientes conectados
+            cabecalhoCreq = montarCabecalho(CREQ, IDOrigem, '9999', str(sequencia))
+            tcp.send(cabecalhoCreq)
             # Recebe confirmacao (OK) e lista
             confirmacaoCreq = tcp.recv(1024)
-	    checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, sequencia)
-	    #print confirmacaoCreq, checarOKCreq
-	    if confirmacaoCreq != checarOKCreq:
-		print "ERRO"
-	    else:
-		print "CREQ RECEBIDO"
-	    listaClientes = tcp.recv(1024)
-	    # Envia OK pois recebeu o CLIST
-	    cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999',str(sequencia))
-            tcp.send (cabecalhoClist)
-	    print "CLIST: ", listaClientes[20:]
-	    print "Tamanho:",len(listaClientes[20:])
-	    # Lista que recebera os IDs dos clientes e ira contar apenas exibidores cadastrados no servidor
-	    listaFinal = []
-	    i = 0
-	    while i < len(listaClientes[20:]):
-		if int(listaClientes[20+i:24+i]) > 4095:
- 		    listaFinal.append(listaClientes[20+i:24+i])
-		i = i + 6
-	    print listaFinal, len(listaFinal)
+            checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+            # print confirmacaoCreq, checarOKCreq
+            if confirmacaoCreq != checarOKCreq:
+                print "ERRO"
+            else:
+                print "CREQ RECEBIDO"
+            listaClientes = tcp.recv(1024)
+            # Envia OK pois recebeu o CLIST
+            cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999', str(sequencia))
+            tcp.send(cabecalhoClist)
+            print "CLIST: ", listaClientes[20:]
+            print "Tamanho:", len(listaClientes[20:])
+            # Lista que recebera os IDs dos clientes e ira contar apenas exibidores cadastrados no servidor
+            listaFinal = []
+            i = 0
+            while i < len(listaClientes[20:]):
+                if int(listaClientes[20 + i:24 + i]) > 4095:
+                    listaFinal.append(listaClientes[20 + i:24 + i])
+                i = i + 6
+            print listaFinal, len(listaFinal)
             texto = raw_input()
             while texto <> '\x18':
-	        novoSequencia = int(sequencia)
-	        novoSequencia += 1
-	        sequencia = str('{:04d}'.format(novoSequencia))
-	        cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia) 
-	        mensagem = cabecalhoParaMensagem + texto
+                novoSequencia = int(sequencia)
+                novoSequencia += 1
+                sequencia = str('{:04d}'.format(novoSequencia))
+                cabecalhoParaMensagem = montarCabecalho(MSG, IDOrigem, '0000', sequencia)
+                mensagem = cabecalhoParaMensagem + texto
                 tcp.send(mensagem)
-	        confirmacao = tcp.recv(1024)
-	  	for j in range(0, len(confirmacao), 16): [confirmacao[j:j+16]]
-	        checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
-		print confirmacao, checarOK
-	        if confirmacao != checarOK:
-		    print "ERRO"
-	        else:
-		    print "MENSAGEM ENVIADA"
-		texto = raw_input()
-	    # Fechando conexao
-	    criaFLW = montarCabecalho(FLW, IDOrigem, '0000', sequencia)
-	    tcp.send(criaFLW)
-	    # Aguarda o OK
-	    confirmaFLW = montarCabecalho(OK,'9999',IDOrigem, sequencia)
-	    recebeuOK = tcp.recv(1024)
-	    if confirmaFLW == recebeuOK:
-		print "FECHANDO CONEXAO..."
-		#tcp.settimeout(10)
-            	tcp.close()
-	    else:
-		print "ERRO"
-            	tcp.close()
-
+                confirmacao = tcp.recv(1024)
+                for j in range(0, len(confirmacao), 16): [confirmacao[j:j + 16]]
+                checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+                print confirmacao, checarOK
+                if confirmacao != checarOK:
+                    print "ERRO"
+                else:
+                    print "MENSAGEM ENVIADA"
+                texto = raw_input()
+            # Fechando conexao
+            criaFLW = montarCabecalho(FLW, IDOrigem, '0000', sequencia)
+            tcp.send(criaFLW)
+            # Aguarda o OK
+            confirmaFLW = montarCabecalho(OK, '9999', IDOrigem, sequencia)
+            recebeuOK = tcp.recv(1024)
+            if confirmaFLW == recebeuOK:
+                print "FECHANDO CONEXAO..."
+                # tcp.settimeout(10)
+                tcp.close()
+            else:
+                print "ERRO"
+                tcp.close()
