@@ -29,6 +29,7 @@ if len(sys.argv) > 2:
 else: 
     idExibidor = 'todos'
 print "Este emissor enviara mensagens para", idExibidor
+print "Para fechar a conexao use CTRL+X"
 #msg = raw_input()
 sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
 primeiraVez = 1
@@ -72,6 +73,7 @@ while True:
             	tcp.close()
 	    else:
 		print "ERRO"
+            	tcp.close()
 
     # Senao envia para todos os exibidores disponiveis
     else:
@@ -138,4 +140,5 @@ while True:
             	tcp.close()
 	    else:
 		print "ERRO"
+            	tcp.close()
 

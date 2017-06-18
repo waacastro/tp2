@@ -106,7 +106,8 @@ while inputs:
 			arrayEmissor.remove(s)	
 			# Remove o exibidor da lista de exibidores
 			contadorDeExibidor = contadorDeExibidor - 1
-			arrayExibidor.remove(arrayExibidor[destino])
+			e = arrayExibidor[destino]
+			arrayExibidor.remove(e)
 		# Se mensagem CREQ
 		if data[0:4] == CREQ:
 		    # Confere se o ID do emissor eh valido
