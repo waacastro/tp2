@@ -126,7 +126,7 @@ while inputs:
 			for e in arrayExibidor:
 			    destino =  arrayExibidor.index(e)
 			    destino = destino + numMinExibidor
-			    mensagemFinal = montarCabecalho(MSG, '9999',str('{:04d}'.format(destino)),data[12:16]) + mensagem
+			    mensagemFinal = montarCabecalho(MSG, data[4:8], str('{:04d}'.format(destino)),data[12:16]) + mensagem
 			    e.send(mensagemFinal)
 			# Envia para o emissor o OK
 			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
@@ -149,7 +149,7 @@ while inputs:
 			mensagem = data[16:]
 			print mensagem, destino
 			# Montar cabecalho
-			mensagemFinal = montarCabecalho(MSG, '9999',data[8:12],data[12:16]) + mensagem
+			mensagemFinal = montarCabecalho(MSG, data[4:8],data[8:12],data[12:16]) + mensagem
 			arrayExibidor[destino].send(mensagemFinal)
 			# Envia para o emissor o OK
 			confirmacao = montarCabecalho(OK,'9999',data[4:8],data[12:16])
