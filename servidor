@@ -101,9 +101,6 @@ while inputs:
 			else: destino = 0
 			enviarFLW = montarCabecalho(FLW, data[4:8], data[8:12], data[12:16])
 			arrayExibidor[destino].send(enviarFLW)
-			# Remove o emissor da lista de emissores	
-			contadorDeEmissor = contadorDeEmissor - 1
-			arrayEmissor.remove(s)	
 			# Remove o exibidor da lista de exibidores
 			contadorDeExibidor = contadorDeExibidor - 1
 			e = arrayExibidor[destino]

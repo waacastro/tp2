@@ -53,7 +53,8 @@ while True:
             novaSequencia = int(sequencia)
             novaSequencia = novaSequencia + 1
             sequencia = str('{:04d}'.format(novaSequencia))
-            checarMensagem = montarCabecalho(MSG,IDEmissor,msg[8:12],mensagem[12:16])
+	    IDOrigem = mensagem[8:12]
+            checarMensagem = montarCabecalho(MSG,IDEmissor,IDOrigem,mensagem[12:16])
 	    print mensagem [:16], checarMensagem
 	    if mensagem[:16] == checarMensagem:
 	        print "Mensagem de", IDEmissor,":", mensagem[16:]
