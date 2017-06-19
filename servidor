@@ -107,6 +107,9 @@ while inputs:
                         contadorDeExibidor = contadorDeExibidor - 1
                         e = arrayExibidor[destino]
                         arrayExibidor.remove(e)
+                        # Remove o emissor da lista de emissores
+                        contadorDeEmissor = contadorDeEmissor - 1
+                        arrayEmissor.remove(s)
 		# Se mensagem ERRO
 		if data[0:4] == ERRO:
 		    print "ERRO"
