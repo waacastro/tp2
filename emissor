@@ -5,6 +5,7 @@ import socket
 
 # Tipos
 OK = '0001'
+ERRO = '0002'
 OI = '0003'
 FLW = '0004'
 MSG = '0005'
@@ -53,9 +54,9 @@ while True:
             checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
             print confirmacaoCreq, checarOKCreq
             if confirmacaoCreq != checarOKCreq:
-                print "ERRO"
+                tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
             else:
-                print "CREQ RECEBIDO"
+                tcp.send(montarCabecalho(OK, IDOrigem, '9999', str(sequencia)))
             listaClientes = tcp.recv(1024)
             # Envia OK pois recebeu o CLIST
             cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999', str(sequencia))
@@ -63,9 +64,9 @@ while True:
             print "CLIST: ", listaClientes[20:]
             print "Tamanho:", len(listaClientes[20:])
             if sys.argv[2] in listaClientes:
-                print 'Conectado ao exibidor', sys.argv[2]
+                tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
             else:
-                print 'Nao existe nenhum exibidor com o ID', sys.argv[2]
+                tcp.send(montarCabecalho(OK, IDOrigem, '9999', str(sequencia)))
         else:
             texto = raw_input()
             while texto <> '\x18':

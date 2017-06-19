@@ -8,6 +8,7 @@ Server = 65535
 
 # Tipos
 OK = '0001'
+ERRO = '0002'
 OI = '0003'
 FLW = '0004'
 MSG = '0005'
@@ -16,8 +17,8 @@ CLIST = '0007'
 
 # Para montar o cabecalho da mensagem
 def montarCabecalho(tipo, IDO, IDD, numSeq):
-	cabecalho = tipo + IDO + IDD + numSeq
-	return cabecalho
+    cabecalho = tipo + IDO + IDD + numSeq
+    return cabecalho
 
 for aux in sys.argv[1:2]:
     ip, port = aux.split(":")
@@ -29,38 +30,38 @@ tcp.connect(dest)
 primeiraVez = 1
 sequencia = '0000'	# Se inicia como string, para incrementar basta transforma-la em int
 while True:
-	if primeiraVez == 1:
-	    primeiroCabecalho = montarCabecalho(OI, '0000', '9999', str(sequencia))
-  	    tcp.send (primeiroCabecalho)
-	    primeiraVez = 0
- 	    # Recebe confirmacao (OK)
-	    msg = tcp.recv(1024)
-	    print "Para enviar mensagem para este exibidor, utilizar o ID", msg[8:12]
-	# Apos receber confirmacao, aguarda por uma mensagem a ser recebida
-    	mensagem = tcp.recv(1024)
-	if not mensagem: break
-	IDEmissor = mensagem[4:8]
-	# Se for mensagem FLW
-	if mensagem[0:4] == FLW:
-	    # Envia OK confirmando que recebeu o FLW
-	    montarOK = montarCabecalho(OK,msg[8:12],IDEmissor,mensagem[12:16])
-	    print "FECHANDO CONEXAO COM",IDEmissor,"..."
-	    break
-	# Se for mensagem OK
-	if mensagem[0:4] == OK:
-	    print "TUDO CERTO"
-	else:
-            novaSequencia = int(sequencia)
-            novaSequencia = novaSequencia + 1
-            sequencia = str('{:04d}'.format(novaSequencia))
-	    IDOrigem = mensagem[8:12]
-            checarMensagem = montarCabecalho(MSG,IDEmissor,IDOrigem,mensagem[12:16])
-	    print mensagem [:16], checarMensagem
-	    if mensagem[:16] == checarMensagem:
-	        print "Mensagem de", IDEmissor,":", mensagem[16:]
-	        confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',mensagem[12:16])
-	        tcp.send(confirmarRecebimento)
-	    else:
-	        print "ERRO"
+    if primeiraVez == 1:
+        primeiroCabecalho = montarCabecalho(OI, '0000', '9999', str(sequencia))
+        tcp.send (primeiroCabecalho)
+        primeiraVez = 0
+        # Recebe confirmacao (OK)
+        msg = tcp.recv(1024)
+        print "Para enviar mensagem para este exibidor, utilizar o ID", msg[8:12]
+    # Apos receber confirmacao, aguarda por uma mensagem a ser recebida
+    mensagem = tcp.recv(1024)
+    if not mensagem: break
+    IDEmissor = mensagem[4:8]
+    # Se for mensagem FLW
+    if mensagem[0:4] == FLW:
+        # Envia OK confirmando que recebeu o FLW
+        montarOK = montarCabecalho(OK,msg[8:12],IDEmissor,mensagem[12:16])
+        print "FECHANDO CONEXAO COM",IDEmissor,"..."
+        break
+    # Se for mensagem OK
+    if mensagem[0:4] == OK:
+        print "TUDO CERTO"
+    else:
+        novaSequencia = int(sequencia)
+        novaSequencia = novaSequencia + 1
+        sequencia = str('{:04d}'.format(novaSequencia))
+        IDOrigem = mensagem[8:12]
+        checarMensagem = montarCabecalho(MSG,IDEmissor,IDOrigem,mensagem[12:16])
+        print mensagem [:16], checarMensagem
+        if mensagem[:16] == checarMensagem:
+            print "Mensagem de", IDEmissor,":", mensagem[16:]
+            confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',mensagem[12:16])
+            tcp.send(confirmarRecebimento)
+        else:
+            print "ERRO"
 #tcp.settimeout(10)
 tcp.close()
