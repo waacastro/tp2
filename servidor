@@ -107,6 +107,9 @@ while inputs:
                         contadorDeExibidor = contadorDeExibidor - 1
                         e = arrayExibidor[destino]
                         arrayExibidor.remove(e)
+		# Se mensagem ERRO
+		if data[0:4] == ERRO:
+		    print "ERRO"
                 # Se mensagem CREQ
                 if data[0:4] == CREQ:
                     # Confere se o ID do emissor eh valido
@@ -148,7 +151,7 @@ while inputs:
                         cabecalhoConfirma = montarCabecalho(OK,'9999',str(identificadorExibidor),data[12:])
                         message_queues[s].put(cabecalhoConfirma)
                 # Se emissor e envio para todos os exibidores
-                if (data[4:8] != '0000' and data[8:12] == '0000' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST and data[0:4] != FLW):
+                if (data[4:8] != '0000' and data[8:12] == '0000' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST and data[0:4] != FLW and data[0:4] != ERRO):
                     # Se o emissor ja estiver registrado anteriormente
                     if s in arrayEmissor:
                         # Confere se o ID do emissor eh valido
@@ -176,7 +179,7 @@ while inputs:
                         cabecalhoConfirma = montarCabecalho(OK,'9999',str('{:04d}'.format(identificadorEmissor)),data[12:])
                         message_queues[s].put(cabecalhoConfirma)
                 # Se emissor e envio para um emissor especifico
-                if (data[4:8] != '0000' and data[8:12] != '0000' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST and data[0:4] != FLW):
+                if (data[4:8] != '0000' and data[8:12] != '0000' and data[0:4] != OK and data[0:4] != CREQ and data[0:4] != CLIST and data[0:4] != FLW and data[0:4] != ERRO):
                     # Se o emissor ja estiver registrado anteriormente
                     if s in arrayEmissor:
                         # Confere se o ID do emissor eh valido

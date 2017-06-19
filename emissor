@@ -49,22 +49,25 @@ while True:
             IDOrigem = msg[8:12]
             print "Este emissor tem ID:", IDOrigem
             tcp.send(montarCabecalho(CREQ, IDOrigem, '9999', str(sequencia)))
-            # Recebe confirmacao (OK) e lista
+            # Recebe confirmacao (OK ou ERRO) e lista
             confirmacaoCreq = tcp.recv(1024)
-            checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
-            print confirmacaoCreq, checarOKCreq
-            if confirmacaoCreq != checarOKCreq:
-                tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
-            else:
-                tcp.send(montarCabecalho(OK, IDOrigem, '9999', str(sequencia)))
+ 	    checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
+	    checarERROCreq = montarCabecalho(ERRO, '9999', IDOrigem, str(sequencia))
+	    print confirmacaoCreq,checarOKCreq,checarERROCreq
+            if confirmacaoCreq == checarERROCreq:
+ 		print "FECHAR CONEXAO E MANDAR FLW"               
+		#tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
+	    else:
+ 		print "CREQ RECEBIDO"               
             listaClientes = tcp.recv(1024)
             # Envia OK pois recebeu o CLIST
             cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999', str(sequencia))
             tcp.send(cabecalhoClist)
             print "CLIST: ", listaClientes[20:]
             print "Tamanho:", len(listaClientes[20:])
-            if sys.argv[2] in listaClientes:
+            if sys.argv[2] not in listaClientes:
                 tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
+		print "FECHAR CONEXAO E MANDAR FLW"               
             else:
                 tcp.send(montarCabecalho(OK, IDOrigem, '9999', str(sequencia)))
         else:
@@ -79,7 +82,7 @@ while True:
                 confirmacao = tcp.recv(1024)
                 checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
                 if confirmacao != checarOK:
-                    print "ERRO"
+ 		    print "FECHAR CONEXAO E MANDAR FLW"               
                 else:
                     print "MENSAGEM ENVIADA"
                 texto = raw_input()
@@ -94,7 +97,7 @@ while True:
                 # tcp.settimeout(10)
                 tcp.close()
             else:
-                print "ERRO"
+                print "FECHAR CONEXAO E MANDAR FLW"
                 tcp.close()
 
     # Senao envia para todos os exibidores disponiveis
@@ -113,12 +116,14 @@ while True:
             tcp.send(cabecalhoCreq)
             # Recebe confirmacao (OK) e lista
             confirmacaoCreq = tcp.recv(1024)
-            checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, sequencia)
-            # print confirmacaoCreq, checarOKCreq
-            if confirmacaoCreq != checarOKCreq:
-                print "ERRO"
-            else:
-                print "CREQ RECEBIDO"
+ 	    checarOKCreq = montarCabecalho(OK, '9999', IDOrigem, str(sequencia))
+	    checarERROCreq = montarCabecalho(ERRO, '9999', IDOrigem, str(sequencia))
+	    print confirmacaoCreq,checarOKCreq,checarERROCreq
+            if confirmacaoCreq == checarERROCreq:
+ 		print "FECHAR CONEXAO E MANDAR FLW"               
+		#tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
+	    else:
+ 		print "CREQ RECEBIDO"  
             listaClientes = tcp.recv(1024)
             # Envia OK pois recebeu o CLIST
             cabecalhoClist = montarCabecalho(CLIST, IDOrigem, '9999', str(sequencia))
@@ -146,7 +151,7 @@ while True:
                 checarOK = montarCabecalho(OK, '9999', IDOrigem, sequencia)
                 print confirmacao, checarOK
                 if confirmacao != checarOK:
-                    print "ERRO"
+ 		    print "FECHAR CONEXAO E MANDAR FLW"               
                 else:
                     print "MENSAGEM ENVIADA"
                 texto = raw_input()
@@ -161,5 +166,5 @@ while True:
                 # tcp.settimeout(10)
                 tcp.close()
             else:
-                print "ERRO"
+                print "FECHAR CONEXAO E MANDAR FLW"
                 tcp.close()
