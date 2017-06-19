@@ -100,16 +100,20 @@ while inputs:
                         if int(data[8:12]) != 0:
                             destino = int(data[8:12])
                             destino = destino - numMinExibidor
-                        else: destino = 0
-                        enviarFLW = montarCabecalho(FLW, data[4:8], data[8:12], data[12:16])
-                        arrayExibidor[destino].send(enviarFLW)
-                        # Remove o exibidor da lista de exibidores
-                        contadorDeExibidor = contadorDeExibidor - 1
-                        e = arrayExibidor[destino]
-                        arrayExibidor.remove(e)
-                        # Remove o emissor da lista de emissores
-                        contadorDeEmissor = contadorDeEmissor - 1
-                        arrayEmissor.remove(s)
+			    enviarFLW = montarCabecalho(FLW, data[4:8], data[8:12], data[12:16])
+                            arrayExibidor[destino].send(enviarFLW)
+                            # Remove o exibidor da lista de exibidores
+                            contadorDeExibidor = contadorDeExibidor - 1
+                            e = arrayExibidor[destino]
+                            arrayExibidor.remove(e)
+                            # Remove o emissor da lista de emissores
+                            contadorDeEmissor = contadorDeEmissor - 1
+                            arrayEmissor.remove(s)
+                        else: 
+                            # Remove o emissor da lista de emissores
+                            contadorDeEmissor = contadorDeEmissor - 1
+                            arrayEmissor.remove(s)
+                        
 		# Se mensagem ERRO
 		if data[0:4] == ERRO:
 		    print "ERRO"
@@ -215,8 +219,8 @@ while inputs:
                     outputs.append(s)
             else:
                 # Interpret empty result as closed connection
-                #print >>sys.stderr, 'closing', client_address, 'after reading no data'
-                print >>sys.stderr, 'closing', s.getpeername(), 'after reading no data'
+                print >>sys.stderr, 'closing', client_address, 'after reading no data'
+                #print >>sys.stderr, 'closing', s.getpeername(), 'after reading no data'
                 # Stop listening for input on the connection
                 if s in outputs:
                     outputs.remove(s)

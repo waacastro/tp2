@@ -3,9 +3,6 @@
 import sys
 import socket
 
-# Servidor
-Server = 65535
-
 # Tipos
 OK = '0001'
 ERRO = '0002'
@@ -34,15 +31,8 @@ while True:
         primeiroCabecalho = montarCabecalho(OI, '0000', '9999', str(sequencia))
         tcp.send (primeiroCabecalho)
         primeiraVez = 0
-        # Recebe confirmacao (OK ou ERRO)
-        msg = tcp.recv(1024)
-	checarOK = montarCabecalho(OK, '9999', msg[8:12], str(sequencia))
-	checarERRO = montarCabecalho(ERRO, '9999', msg[8:12], str(sequencia))
-	print msg,checarOK,checarERRO
-        if msg == checarERRO:
- 	    print "FECHAR CONEXAO E MANDAR FLW"               
-	else:
- 	    print "ID RECEBIDO CORRETAMENTE"               
+        # Recebe confirmacao 
+        msg = tcp.recv(1024)             
         print "Para enviar mensagem para este exibidor, utilizar o ID", msg[8:12]
     # Apos receber confirmacao, aguarda por uma mensagem a ser recebida
     mensagem = tcp.recv(1024)
@@ -53,12 +43,7 @@ while True:
         # Envia OK confirmando que recebeu o FLW
         montarOK = montarCabecalho(OK,msg[8:12],IDEmissor,mensagem[12:16])
         print "FECHANDO CONEXAO COM",IDEmissor,"..."
-        break
-    # Se for mensagem OK
-    if mensagem[0:4] == OK:
-        print "TUDO CERTO"
-    if mensagem[0:4] == ERRO:
- 	print "FECHAR CONEXAO E MANDAR FLW"               
+        break          
     else:
         novaSequencia = int(sequencia)
         novaSequencia = novaSequencia + 1
@@ -71,6 +56,6 @@ while True:
             confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',mensagem[12:16])
             tcp.send(confirmarRecebimento)
         else:
- 	    print "FECHAR CONEXAO E MANDAR FLW"               
+	    tcp.send(montarCabecalho(ERRO,msg[8:12],'9999',mensagem[12:16]))               
 #tcp.settimeout(10)
 tcp.close()
