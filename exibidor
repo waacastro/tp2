@@ -50,7 +50,6 @@ while True:
         sequencia = str('{:04d}'.format(novaSequencia))
         IDOrigem = mensagem[8:12]
         checarMensagem = montarCabecalho(MSG,IDEmissor,IDOrigem,mensagem[12:16])
-        print mensagem [:16], checarMensagem
         if mensagem[:16] == checarMensagem:
             print "Mensagem de", IDEmissor,":", mensagem[16:]
             confirmarRecebimento = montarCabecalho(OK,msg[8:12],'9999',mensagem[12:16])

@@ -109,8 +109,8 @@ while True:
                 	tcp.send(montarCabecalho(ERRO, IDOrigem, '9999', str(sequencia)))
                 	tcp.close()
 		# OK
-                else:
-                    print "MENSAGEM ENVIADA"
+                #else:
+                    #print "MENSAGEM ENVIADA"
                 texto = raw_input()
             # Fechando conexao
             criaFLW = montarCabecalho(FLW, IDOrigem, '{:04d}'.format(idExibidor), sequencia)
